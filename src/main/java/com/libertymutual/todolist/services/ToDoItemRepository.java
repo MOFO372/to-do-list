@@ -25,15 +25,16 @@ public class ToDoItemRepository {
 	 * @return A list of the items. If no items exist, returns an empty list.
 	 */
 
-public List<ToDoItem> getAll() {
-		
-		try (FileReader reader = new FileReader("list.csv"); CSVParser parser = new CSVParser(reader, CSVFormat.RFC4180);) {
-			
-		List<CSVRecord> record = CSVFormat.DEFAULT.parse(reader).getRecords();
-		itemList = new ArrayList<ToDoItem>();
-		int existingID = 0;
-		
-			for (CSVRecord current: record) {
+	public List<ToDoItem> getAll() {
+
+		try (FileReader reader = new FileReader("list.csv");
+				CSVParser parser = new CSVParser(reader, CSVFormat.RFC4180);) {
+
+			List<CSVRecord> record = CSVFormat.DEFAULT.parse(reader).getRecords();
+			itemList = new ArrayList<ToDoItem>();
+			int existingID = 0;
+
+			for (CSVRecord current : record) {
 				ToDoItem item = new ToDoItem();
 				item.setId(Integer.parseInt(current.get(0)));
 				item.setText(current.get(1));
@@ -42,19 +43,19 @@ public List<ToDoItem> getAll() {
 				if (Integer.parseInt(current.get(0)) > existingID) {
 					existingID = Integer.parseInt(current.get(0));
 				}
-				
+
 				nextId = existingID + 1;
-			} 	
-		}	catch (IOException ioe) {
+			}
+		} catch (IOException ioe) {
 			System.out.println("Could not read the record in the file.");
 		}
-		
+
 		if (itemList.size() == 0) {
 			return Collections.emptyList();
 		}
-		
+
 		return itemList;
-		
+
 	}
 
 	/**
@@ -64,7 +65,7 @@ public List<ToDoItem> getAll() {
 	 *            The to-do item to save to the file.
 	 */
 	public void create(ToDoItem item) {
-		
+
 		item.setId(nextId);
 		nextId += 1;
 
@@ -74,9 +75,7 @@ public List<ToDoItem> getAll() {
 			String[] record = { Integer.toString(item.getId()), item.getText(), Boolean.toString(item.isComplete()) };
 
 			// writes the record to the file
-			
 			printer.printRecord(record);
-			
 
 		} catch (IOException e) {
 			System.out.println("No.");
@@ -92,12 +91,14 @@ public List<ToDoItem> getAll() {
 	 * @return The ToDoItem with the specified id or null if none is found.
 	 */
 	public ToDoItem getById(int id) {
-		
-		if(itemList.size() > 0) {
-			return itemList.get(id); 
+	
+		for (int i = 0; i < itemList.size(); i += 1) {
+			ToDoItem current = itemList.get(i);
+			if (current.getId() == id) {
+				return current;
+			}
 		}
 
-		
 		return null;
 	}
 
@@ -109,8 +110,27 @@ public List<ToDoItem> getAll() {
 	 */
 	public void update(ToDoItem item) {
 
-		
+		for (int i = 0; i < itemList.size(); i += 1) {
+			ToDoItem current = itemList.get(i);
 
-	}
+			if (current.getId() == item.getId()) {
+
+				current.setComplete(true);
+			}
+		}
+			try (FileWriter writer = new FileWriter("list.csv"); CSVPrinter printer = CSVFormat.DEFAULT.print(writer)) {
+
+				for (int j = 0; j < itemList.size(); j += 1) {
+					ToDoItem current2 = itemList.get(j);
+					String[] record = { Integer.toString(current2.getId()), current2.getText(),Boolean.toString(current2.isComplete()) };
+					printer.printRecord(record);
+				}
+
+			} catch (IOException e) {
+				System.out.println("No.");
+
+			}
+
+		}
 
 }
